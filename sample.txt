@@ -2,29 +2,4 @@ AAAAAA
 BBBBBB
 CCCCCC
 DDDDDD
-EEEFFbb
-a
-b
-c
-d
-D
-E
-DF
-F
-A
-B
-A
-B
-C
-D
-FB
-abcde
-
-fgh
-
-	if err != nil {
-		panic(err)
-	}
-
-Ok google
-
+EEEFF
