@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
+	"github.com/lxn/walk"
+	. "github.com/lxn/walk/declarative"
 	"io/ioutil"
 	"log"
 	"os"
 )
 
 func main() {
-
 	filename := "./sample.txt"
+	var inTE, outTE *walk.TextEdit
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -27,7 +29,6 @@ func main() {
 		return
 	}
 	fsize := fileinfo.Size()
-
 	go func() {
 		for {
 			select {
@@ -45,7 +46,8 @@ func main() {
 					panic(err)
 				}
 				fsize = fsize + int64(len(b))
-				fmt.Println("update:", string(b))
+
+				outTE.SetText(string(b))
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}
@@ -57,5 +59,32 @@ func main() {
 		log.Fatal(err)
 	}
 
+	var mw *walk.MainWindow
+
+	if _, err := (MainWindow{
+		AssignTo: &mw,
+		Title:    "txtfile-update-notifier",
+		Size:     Size{300, 200},
+		MaxSize:  Size{400, 300},
+		MinSize:  Size{100, 100},
+		Layout:   VBox{},
+		Children: []Widget{
+			TextEdit{AssignTo: &outTE, ReadOnly: true},
+			TextEdit{AssignTo: &inTE},
+			PushButton{
+				Text: "SCREAM",
+				OnClicked: func() {
+					file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0666)
+					if err != nil {
+						log.Fatal(err)
+					}
+					defer file.Close()
+					fmt.Fprintln(file, inTE.Text()+"\n") //ファイルに書き込み
+				},
+			},
+		},
+	}.Run()); err != nil {
+		log.Fatal(err)
+	}
 	<-done
 }
