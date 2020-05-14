@@ -72,7 +72,7 @@ func main() {
 			TextEdit{AssignTo: &outTE, ReadOnly: true},
 			TextEdit{AssignTo: &inTE},
 			PushButton{
-				Text: "SCREAM",
+				Text: "ADD",
 				OnClicked: func() {
 					file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0666)
 					if err != nil {
