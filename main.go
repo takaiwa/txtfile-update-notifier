@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/lxn/walk"
@@ -11,8 +12,14 @@ import (
 )
 
 func main() {
+	flag.Parse()
 	filename := "./sample.txt"
+	if len(flag.Args()) != 0 {
+		filename = flag.Arg(0)
+	}
+
 	var inTE, outTE *walk.TextEdit
+	var fileL *walk.Label
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -29,6 +36,7 @@ func main() {
 		return
 	}
 	fsize := fileinfo.Size()
+
 	go func() {
 		for {
 			select {
@@ -69,6 +77,12 @@ func main() {
 		MinSize:  Size{100, 100},
 		Layout:   VBox{},
 		Children: []Widget{
+			Composite{
+				Layout: HBox{},
+				Children: []Widget{
+					Label{AssignTo: &fileL, Text: filename},
+				},
+			},
 			TextEdit{AssignTo: &outTE, ReadOnly: true},
 			TextEdit{AssignTo: &inTE},
 			PushButton{
@@ -86,5 +100,6 @@ func main() {
 	}.Run()); err != nil {
 		log.Fatal(err)
 	}
+
 	<-done
 }
