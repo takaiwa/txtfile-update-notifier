@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	var inTE, outTE *walk.TextEdit
-	var fileL *walk.Label
+	var fileL *walk.LinkLabel
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -80,7 +81,17 @@ func main() {
 			Composite{
 				Layout: HBox{},
 				Children: []Widget{
-					Label{AssignTo: &fileL, Text: filename},
+					LinkLabel{
+						AssignTo: &fileL,
+						Text:     `<a id="filename" href="">` + filename + `</a>`,
+						OnLinkActivated: func(link *walk.LinkLabelLink) {
+							wincmd := "/C start " + filename
+							err := exec.Command("cmd", wincmd).Run()
+							if err != nil {
+								panic(err)
+							}
+						},
+					},
 				},
 			},
 			TextEdit{AssignTo: &outTE, ReadOnly: true},
