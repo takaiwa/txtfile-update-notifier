@@ -30,6 +30,8 @@ func main() {
 
 	done := make(chan bool)
 
+	defer close(done)
+
 	// ファイルパスからファイル情報取得
 	fileinfo, err := os.Stat(filename)
 	if err != nil {
@@ -47,7 +49,6 @@ func main() {
 				if err != nil {
 					fmt.Printf(err.Error())
 				}
-				defer file.Close()
 
 				file.Seek(fsize, 0)
 				b, err := ioutil.ReadAll(file)
@@ -55,6 +56,7 @@ func main() {
 					panic(err)
 				}
 				fsize = fsize + int64(len(b))
+				file.Close()
 
 				outTE.SetText(string(b))
 			case err := <-watcher.Errors:
@@ -103,14 +105,12 @@ func main() {
 					if err != nil {
 						log.Fatal(err)
 					}
-					defer file.Close()
 					fmt.Fprintln(file, inTE.Text()+"\n") //ファイルに書き込み
+					file.Close()
 				},
 			},
 		},
 	}.Run()); err != nil {
 		log.Fatal(err)
 	}
-
-	<-done
 }
