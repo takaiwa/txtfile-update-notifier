@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 )
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 
 	var inTE, outTE *walk.TextEdit
 	var fileL *walk.LinkLabel
+	var timeL *walk.Label
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -60,6 +62,8 @@ func main() {
 
 				outTE.SetText(string(b))
 				inTE.SetText("") // クリア
+				t := time.Now()
+				timeL.SetText(t.Format("15:04"))
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}
@@ -94,6 +98,11 @@ func main() {
 								panic(err)
 							}
 						},
+					},
+					Label{
+						AssignTo:      &timeL,
+						TextAlignment: AlignFar,
+						Text:          "",
 					},
 				},
 			},
