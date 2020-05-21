@@ -59,6 +59,7 @@ func main() {
 				file.Close()
 
 				outTE.SetText(string(b))
+				inTE.SetText("") // クリア
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}
