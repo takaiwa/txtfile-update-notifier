@@ -47,23 +47,26 @@ func main() {
 			select {
 			case event := <-watcher.Events:
 				log.Println("event:", event)
-				file, err := os.Open(filename)
-				if err != nil {
-					fmt.Printf(err.Error())
-				}
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					file, err := os.Open(filename)
+					if err == nil {
+						file.Seek(fsize, 0)
+						b, err := ioutil.ReadAll(file)
+						if err != nil {
+							//panic(err)
+							fmt.Printf(err.Error())
+						}
+						fsize = fsize + int64(len(b))
+						file.Close()
 
-				file.Seek(fsize, 0)
-				b, err := ioutil.ReadAll(file)
-				if err != nil {
-					panic(err)
+						outTE.SetText(string(b))
+						inTE.SetText("") // クリア
+						t := time.Now()
+						timeL.SetText(t.Format("15:04"))
+					} else {
+						fmt.Printf(err.Error())
+					}
 				}
-				fsize = fsize + int64(len(b))
-				file.Close()
-
-				outTE.SetText(string(b))
-				inTE.SetText("") // クリア
-				t := time.Now()
-				timeL.SetText(t.Format("15:04"))
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}
@@ -107,7 +110,7 @@ func main() {
 				},
 			},
 			TextEdit{AssignTo: &outTE, ReadOnly: true},
-			TextEdit{AssignTo: &inTE},
+			TextEdit{AssignTo: &inTE, VScroll: true},
 			PushButton{
 				Text: "ADD",
 				OnClicked: func() {
